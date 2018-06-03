@@ -254,7 +254,7 @@ class QtConan(ConanFile):
 
         if self.settings.os == "Macos":
             args += ["-silent", "-no-framework"]
-            platform = "-platform linux-"
+            platform = "-platform macx-"
             if self.settings.compiler == "gcc":
                 platform += "g++"
             elif self.settings.compiler == "clang":
