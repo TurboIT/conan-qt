@@ -165,35 +165,37 @@ class QtConan(ConanFile):
             build_args = []
         self.output.info("Using '%s %s' to build" % (build_command, " ".join(build_args)))
 
-        env = {}
-        env.update({'PATH': ['%s/qtbase/bin' % self.build_folder,
+        env2 = {}
+        env2.update({'PATH': ['%s/qtbase/bin' % self.build_folder,
                              '%s/gnuwin32/bin' % self.build_folder,
                              '%s/qtrepotools/bin' % self.build_folder]})
         # it seems not enough to set the vcvars for older versions
         if self.settings.compiler == "Visual Studio":
             if self.settings.compiler.version == "15":
-                env.update({'QMAKESPEC': 'win32-msvc2017'})
+                env2.update({'QMAKESPEC': 'win32-msvc2017'})
                 args += ["-platform win32-msvc2017"]
             if self.settings.compiler.version == "14":
-                env.update({'QMAKESPEC': 'win32-msvc2015'})
+                env2.update({'QMAKESPEC': 'win32-msvc2015'})
                 args += ["-platform win32-msvc2015"]
             if self.settings.compiler.version == "12":
-                env.update({'QMAKESPEC': 'win32-msvc2013'})
+                env2.update({'QMAKESPEC': 'win32-msvc2013'})
                 args += ["-platform win32-msvc2013"]
             if self.settings.compiler.version == "11":
-                env.update({'QMAKESPEC': 'win32-msvc2012'})
+                env2.update({'QMAKESPEC': 'win32-msvc2012'})
                 args += ["-platform win32-msvc2012"]
             if self.settings.compiler.version == "10":
-                env.update({'QMAKESPEC': 'win32-msvc2010'})
+                env2.update({'QMAKESPEC': 'win32-msvc2010'})
                 args += ["-platform win32-msvc2010"]
 
         env_build = VisualStudioBuildEnvironment(self)
-        env.update(env_build.vars)
+        env2.update(env_build.vars)
 
+        env = {}
         # Workaround for conan-io/conan#1408
-        for name, value in env.items():
-            if not value:
-                del env[name]
+        for name, value in env2.items():
+            if value:
+                env.update({name : value})
+
         with tools.environment_append(env):
             vcvars = tools.vcvars_command(self.settings)
 
@@ -205,12 +207,12 @@ class QtConan(ConanFile):
             else:
                 args += ["-openssl-linked"]
 
-            self.run("cd %s && %s && set" % (self.source_dir, vcvars))
-            self.run("cd %s && %s && configure %s"
-                     % (self.source_dir, vcvars, " ".join(args)))
-            self.run("cd %s && %s && %s %s"
-                     % (self.source_dir, vcvars, build_command, " ".join(build_args)))
-            self.run("cd %s && %s && %s install" % (self.source_dir, vcvars, build_command))
+#            self.run("cd %s && %s && set" % (self.source_dir, vcvars))
+            self.run("cd %s && configure %s"
+                     % (self.source_dir, " ".join(args)))
+            self.run("cd %s && %s %s"
+                     % (self.source_dir, build_command, " ".join(build_args)))
+            self.run("cd %s && %s install" % (self.source_dir, build_command))
 
     def _build_mingw(self, args):
         env_build = AutoToolsBuildEnvironment(self)
