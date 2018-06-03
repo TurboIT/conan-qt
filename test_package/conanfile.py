@@ -14,9 +14,11 @@ class QtTestConan(ConanFile):
     generators = "cmake", "virtualenv"
 
     def build(self):
-        cmake = CMake(self.settings)
-        self.run('cmake "%s" %s' % (self.conanfile_directory, cmake.command_line))
-        self.run("cmake --build . %s" % cmake.build_config)
+        cmake = CMake(self)
+        cmake.configure()
+        cmake.build() 
+        #self.run('cmake "%s" %s' % (self.conanfile_directory, cmake.command_line))
+        #self.run("cmake --build . %s" % cmake.build_config)
 
     def test(self):
         if self.settings.os == "Windows":
