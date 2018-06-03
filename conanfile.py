@@ -239,12 +239,26 @@ class QtConan(ConanFile):
     def _build_unix(self, args):
         if self.settings.os == "Linux":
             args += ["-silent", "-xcb"]
+            platform = "-platform linux-"
+            if self.settings.compiler == "gcc":
+                platform += "g++"
+            elif self.settings.compiler == "clang":
+                platform += "clang"
             if self.settings.arch == "x86":
-                args += ["-platform linux-g++-32"]
-        else:
+                platform += "-32"
+
+            args += [platform]
+
+        if self.settings.os == "Macos":
             args += ["-silent", "-no-framework"]
+            platform = "-platform linux-"
+            if self.settings.compiler == "gcc":
+                platform += "g++"
+            elif self.settings.compiler == "clang":
+                platform += "clang"
             if self.settings.arch == "x86":
-                args += ["-platform macx-clang-32"]
+                platform += "-32"
+            args += [platform]
 
         self.output.info("Using '%s' threads" % str(cpu_count()))
         self.run("cd %s && ./configure %s" % (self.source_dir, " ".join(args)))
