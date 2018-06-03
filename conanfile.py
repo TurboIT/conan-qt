@@ -166,11 +166,14 @@ class QtConan(ConanFile):
         self.output.info("Using '%s %s' to build" % (build_command, " ".join(build_args)))
 
         env = {}
-        env.update({'PATH': ['%s/qtbase/bin' % self.conanfile_directory,
-                             '%s/gnuwin32/bin' % self.conanfile_directory,
-                             '%s/qtrepotools/bin' % self.conanfile_directory]})
+        env.update({'PATH': ['%s/qtbase/bin' % self.build_folder,
+                             '%s/gnuwin32/bin' % self.build_folder,
+                             '%s/qtrepotools/bin' % self.build_folder]})
         # it seems not enough to set the vcvars for older versions
         if self.settings.compiler == "Visual Studio":
+            if self.settings.compiler.version == "15":
+                env.update({'QMAKESPEC': 'win32-msvc2017'})
+                args += ["-platform win32-msvc2017"]
             if self.settings.compiler.version == "14":
                 env.update({'QMAKESPEC': 'win32-msvc2015'})
                 args += ["-platform win32-msvc2015"]
