@@ -193,9 +193,10 @@ class QtConan(ConanFile):
         env = {}
         # Workaround for conan-io/conan#1408
         for name, value in env2.items():
-            if value:
+            if value and name != "QMAKESPEC":
                 env.update({name : value})
-
+                self.output.info("%s:%s" %(name, value))
+				
         with tools.environment_append(env):
             vcvars = tools.vcvars_command(self.settings)
 
@@ -208,11 +209,14 @@ class QtConan(ConanFile):
                 args += ["-openssl-linked"]
 
 #            self.run("cd %s && %s && set" % (self.source_dir, vcvars))
-            self.run("cd %s && configure %s"
-                     % (self.source_dir, " ".join(args)))
-            self.run("cd %s && %s %s"
-                     % (self.source_dir, build_command, " ".join(build_args)))
-            self.run("cd %s && %s install" % (self.source_dir, build_command))
+            source_dir = "%s/%s" % (self.build_folder, self.source_dir)
+          #  del self.env_info["QMAKESPEC"]
+          #  del self.env_info["XQMAKESPEC"]
+          #  del self.env_info["QMAKEPATH"]
+            self.output.info("cd %s && configure.bat %s" % (source_dir, " ".join(args)))
+            self.run("cd %s && configure.bat %s" % (source_dir, " ".join(args)))
+            self.run("cd %s && %s %s" % (source_dir, build_command, " ".join(build_args)))
+            self.run("cd %s && %s install" % (source_dir, build_command))
 
     def _build_mingw(self, args):
         env_build = AutoToolsBuildEnvironment(self)
@@ -222,6 +226,7 @@ class QtConan(ConanFile):
                         '%s/qtrepotools/bin' % self.conanfile_directory],
                'QMAKESPEC': 'win32-g++'}
         env.update(env_build.vars)
+
         with tools.environment_append(env):
             # Workaround for configure using clang first if in the path
             new_path = []
